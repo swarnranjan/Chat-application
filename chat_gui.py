@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QTextEdit, QLineEdit, QLabel, QFileDialog, QMessageBox, QComboBox
+    QPushButton, QTextEdit, QLineEdit, QLabel, QFileDialog, QMessageBox
 )
 from PyQt5.QtCore import Qt
 from client_logic import ChatClient
@@ -74,7 +74,7 @@ class ChatWindow(QMainWindow):
         self.chat_client.on('on_error', self.display_error)
         try:
             self.chat_client.connect()
-            self.chat_log.append("[Connected] Secure chat session started.")
+            self.chat_log.append(f"[Connected] Logged in as '{username}'.")
             self.connect_btn.setEnabled(False)
             self.username_input.setEnabled(False)
         except Exception as e:
@@ -107,7 +107,7 @@ class ChatWindow(QMainWindow):
 
     def display_file_status(self, sender, filename, out_file, success):
         if success:
-            self.chat_log.append(f"[File Received] {filename} from {sender} saved as {out_file}")
+            self.chat_log.append(f"[File Received] {filename} from {sender} saved as recv_{filename}")
         else:
             self.chat_log.append(f"[File Error] Failed to verify file from {sender}")
 
