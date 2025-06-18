@@ -1,5 +1,3 @@
-# client_logic.py (refactored from client.py)
-
 import socket
 import os
 import threading
