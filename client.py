@@ -12,6 +12,7 @@ HOST = '127.0.0.1'
 PORT = 5000
 USERNAME = ""
 
+
 def receive_messages(sock):
     while True:
         try:
@@ -56,6 +57,7 @@ def receive_messages(sock):
             print(f"[ERROR] Receiving: {e}")
             break
 
+
 def send_message(sock, recipient):
     message = input("Enter message: ")
     encrypted_str = encrypt_message(message, verbose=True)
@@ -69,6 +71,7 @@ def send_message(sock, recipient):
     sock.send(recipient.encode().ljust(20))
     sock.send(str(len(payload)).zfill(10).encode())
     sock.send(payload.encode())
+
 
 def send_file(sock, recipient):
     filepath = input("Enter file path: ")
@@ -101,12 +104,23 @@ def send_file(sock, recipient):
     os.remove(sha_file)
     print(f"[CLIENT] File '{filename}' sent to {recipient}.")
 
+
 def main():
     global USERNAME
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((HOST, PORT))
         USERNAME = input("Enter your unique username: ").strip()
         sock.send(USERNAME.encode().ljust(20))
+
+        pubkey_path = f"public_{USERNAME}.pem"
+        if not os.path.exists(pubkey_path):
+            print("[CLIENT] Public key not found. Exiting.")
+            return
+
+        with open(pubkey_path, 'rb') as f:
+            key_data = f.read()
+            sock.send(str(len(key_data)).zfill(4).encode())
+            sock.send(key_data)
 
         threading.Thread(target=receive_messages, args=(sock,), daemon=True).start()
 
@@ -124,6 +138,7 @@ def main():
                 break
             else:
                 print("Invalid option.")
+
 
 if __name__ == "__main__":
     main()

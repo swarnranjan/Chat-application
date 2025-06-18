@@ -1,3 +1,5 @@
+# crypto_utils.py
+
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
@@ -6,8 +8,9 @@ from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 import base64
 import hashlib
+import os
 
-KEY = b'sixteen byte key'  # AES key
+KEY = b'sixteen byte key'  # 16-byte key for AES-128
 
 def encrypt_message(message, verbose=False):
     iv = get_random_bytes(16)

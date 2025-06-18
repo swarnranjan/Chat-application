@@ -1,22 +1,36 @@
+# ===== improved server.py =====
 import socket
 import threading
 import base64
+import os
+import json
 from crypto_utils import decrypt_message, verify_sha256, verify_signature
 
 HOST = '0.0.0.0'
 PORT = 5000
 clients = {}  # username -> socket
+public_keys = {}  # username -> RSA public key file
 lock = threading.Lock()
+
 
 def handle_client(conn, addr):
     try:
         username = conn.recv(20).decode().strip()
+        public_key_data_len = int(conn.recv(4).decode())
+        public_key_data = conn.recv(public_key_data_len)
+        public_key_path = f"public_{username}.pem"
+
+        with open(public_key_path, 'wb') as f:
+            f.write(public_key_data)
+
         with lock:
             if username in clients:
                 conn.send(b"Username already taken.")
                 conn.close()
                 return
             clients[username] = conn
+            public_keys[username] = public_key_path
+
         print(f"[SERVER] {username} connected from {addr}")
 
         while True:
@@ -37,10 +51,8 @@ def handle_client(conn, addr):
                     print(f"[WARNING] Invalid message format from {username}. Dropped.")
                     continue
 
-                public_key_path = f"public_{username}.pem"
-
                 if verify_sha256(encrypted_str.encode(), checksum) and \
-                   verify_signature(encrypted_str.encode(), signature, public_key_path):
+                   verify_signature(encrypted_str.encode(), signature, public_keys[username]):
 
                     decrypted = decrypt_message(encrypted_str, verbose=True)
                     print(f"[SERVER] Message from {username} to {recipient}: {decrypted}")
@@ -55,7 +67,7 @@ def handle_client(conn, addr):
                 name_len = int(conn.recv(3).decode())
                 filename = conn.recv(name_len).decode()
                 filesize = int(conn.recv(12).decode())
-                enc_filename = f"enc_recv_{filename}"
+                enc_filename = f"enc_recv_{username}_{filename}"
 
                 with open(enc_filename, 'wb') as f:
                     remaining = filesize
@@ -87,7 +99,6 @@ def handle_client(conn, addr):
 
                         clients[recipient].send(sha_checksum.encode())
 
-        print(f"[SERVER] {username} disconnected")
     except Exception as e:
         print(f"[ERROR] {e}")
     finally:
@@ -95,7 +106,11 @@ def handle_client(conn, addr):
             for user, client in list(clients.items()):
                 if client == conn:
                     del clients[user]
+                    if user in public_keys:
+                        del public_keys[user]
         conn.close()
+        print(f"[SERVER] {username} disconnected")
+
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -106,6 +121,7 @@ def main():
     while True:
         conn, addr = server.accept()
         threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
+
 
 if __name__ == "__main__":
     main()
