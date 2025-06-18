@@ -2,6 +2,7 @@ import socket
 import os
 import threading
 import base64
+from Crypto.PublicKey import RSA
 from crypto_utils import (
     encrypt_message, decrypt_message,
     encrypt_file, decrypt_file,
@@ -112,11 +113,21 @@ def main():
         USERNAME = input("Enter your unique username: ").strip()
         sock.send(USERNAME.encode().ljust(20))
 
+        # RSA Key paths
+        privkey_path = f"private_{USERNAME}.pem"
         pubkey_path = f"public_{USERNAME}.pem"
-        if not os.path.exists(pubkey_path):
-            print("[CLIENT] Public key not found. Exiting.")
-            return
 
+        # Auto-generate RSA key pair if missing
+        if not (os.path.exists(privkey_path) and os.path.exists(pubkey_path)):
+            print(f"[KEYGEN] RSA keys not found for '{USERNAME}'. Generating...")
+            key = RSA.generate(2048)
+            with open(privkey_path, "wb") as priv_file:
+                priv_file.write(key.export_key())
+            with open(pubkey_path, "wb") as pub_file:
+                pub_file.write(key.publickey().export_key())
+            print(f"[KEYGEN] Keys saved as '{privkey_path}' and '{pubkey_path}'.")
+
+        # Send public key to server
         with open(pubkey_path, 'rb') as f:
             key_data = f.read()
             sock.send(str(len(key_data)).zfill(4).encode())
