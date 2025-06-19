@@ -24,7 +24,6 @@ A secure, real-time chat and file transfer application built using Python. It en
 ├── client_logic.py        # Backend logic for secure messaging and file transfer
 ├── chat_gui.py            # PyQt GUI for client interaction
 ├── crypto_utils.py        # Cryptographic functions: AES, SHA, RSA
-├── rsa_key.py             # Optional script to generate predefined keys
 ├── README.md              # This file
 ```
 
