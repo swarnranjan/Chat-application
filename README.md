@@ -110,4 +110,4 @@ This project is developed as part of a research internship and is intended for e
 **Swarn Ranjan**  
 📧 swarnranjan.2004@gmail.com  
 🔗 [LinkedIn](https://linkedin.com/in/swarn-ranjan)  
-🔗 [GitHub](https://github.com/swarnranjan) ← *(update with actual repo link)*
+🔗 [GitHub](https://github.com/swarnranjan/Chat-application)
