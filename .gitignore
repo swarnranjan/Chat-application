@@ -8,3 +8,7 @@ private_*.pem
 public_*.pem
 *.sha
 *.log
+enc_recv_testfile.txt
+enc_recv_testfile.txt.sha
+recv_test.txt
+recv_testfile.txt
